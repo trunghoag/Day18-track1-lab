@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Travel Planner — Prototype thiết kế trải nghiệm AI lấy con người làm trung tâm">
+  <title>AI Travel Planner — Human-Centered AI Design</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+  <div id="app">
+
+    <!-- ========== SCREEN 0: FLOW MAP ========== -->
+    <div class="screen active" id="screen-flowmap">
+      <div class="section-header">
+        <div class="section-tag">00 — Flow Map</div>
+        <h1 class="heading-lg">AI Travel Planner</h1>
+        <p class="text-body mt-sm">Lát cắt: AI tạo & điều chỉnh lịch trình đi Đà Nẵng</p>
+      </div>
+
+      <div class="flow-map mt-md">
+        <!-- Onboarding -->
+        <div class="flow-node" onclick="goTo('screen-onboarding-1')">
+          <div class="flow-icon" style="background: rgba(51,141,255,0.15);">🚀</div>
+          <div class="flow-label">
+            <div class="flow-name">A. Onboarding</div>
+            <div class="flow-desc">Giới thiệu khả năng, giới hạn, quyền dữ liệu</div>
+          </div>
+          <span class="badge badge-primary">T0</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <!-- During -->
+        <div class="flow-node" onclick="goTo('screen-planning')">
+          <div class="flow-icon" style="background: rgba(249,115,22,0.15);">💬</div>
+          <div class="flow-label">
+            <div class="flow-name">B1. Hỏi thêm thông tin</div>
+            <div class="flow-desc">Thu thập bối cảnh — Ask trước khi hành động</div>
+          </div>
+          <span class="badge badge-ask">T2 · Ask</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <div class="flow-node" onclick="goTo('screen-hotel')">
+          <div class="flow-icon" style="background: rgba(234,179,8,0.15);">🏨</div>
+          <div class="flow-label">
+            <div class="flow-name">B2. So sánh khách sạn</div>
+            <div class="flow-desc">Tiêu chí xung đột — Explainability</div>
+          </div>
+          <span class="badge badge-primary">T3</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <!-- After -->
+        <div class="flow-node" onclick="goTo('screen-itinerary')">
+          <div class="flow-icon" style="background: rgba(239,68,68,0.15);">📋</div>
+          <div class="flow-label">
+            <div class="flow-name">C1. Lịch trình quá dày</div>
+            <div class="flow-desc">Phát hiện lỗi → Recovery hoàn chỉnh</div>
+          </div>
+          <span class="badge badge-error">T6 · Sai sót</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <div class="flow-node" onclick="goTo('screen-outdated')">
+          <div class="flow-icon" style="background: rgba(234,179,8,0.15);">⚠️</div>
+          <div class="flow-label">
+            <div class="flow-name">C2. Thông tin lỗi thời</div>
+            <div class="flow-desc">Nguồn cũ → Cảnh báo → Thay thế</div>
+          </div>
+          <span class="badge badge-warning">T7 · Không chắc chắn</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <!-- Agency -->
+        <div class="flow-node" onclick="goTo('screen-booking')">
+          <div class="flow-icon" style="background: rgba(34,197,94,0.15);">🔐</div>
+          <div class="flow-label">
+            <div class="flow-name">D. Đặt dịch vụ — Agency</div>
+            <div class="flow-desc">Act / Ask / Don't Act rõ ràng</div>
+          </div>
+          <span class="badge badge-act">T9 · Agency</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <!-- Feedback -->
+        <div class="flow-node" onclick="goTo('screen-feedback')">
+          <div class="flow-icon" style="background: rgba(147,197,253,0.15);">🔄</div>
+          <div class="flow-label">
+            <div class="flow-name">Ma trận Feedback 2×2</div>
+            <div class="flow-desc">User ↔ System × Explicit ↔ Implicit</div>
+          </div>
+          <span class="badge badge-primary">Feedback</span>
+        </div>
+        <div class="flow-connector">↓</div>
+
+        <!-- Demo Path -->
+        <div class="flow-node" onclick="goTo('screen-demo-path')">
+          <div class="flow-icon" style="background: rgba(34,197,94,0.15);">▶</div>
+          <div class="flow-label">
+            <div class="flow-name">07. Demo Path 5 phút</div>
+            <div class="flow-desc">Script trình bày đúng thứ tự các nhánh</div>
+          </div>
+          <span class="badge badge-success">Demo</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="flex gap-sm" style="flex-wrap: wrap;">
+        <span class="badge badge-act">✅ Act</span>
+        <span class="badge badge-ask">❓ Ask</span>
+        <span class="badge badge-dont-act">🚫 Don't Act</span>
+        <span class="badge badge-error">⚡ Sai sót</span>
+        <span class="badge badge-warning">⚠️ Không chắc chắn</span>
+      </div>
+
+      <div class="mt-lg">
+        <button class="btn btn-primary btn-block" onclick="goTo('screen-demo-path')">
+          ▶ Bắt đầu Demo Path
+        </button>
+      </div>
+
+      <div class="rationale-card mt-lg">
+        <div class="rationale-row"><span class="rationale-label">Phạm vi:</span> Lập kế hoạch chuyến đi Đà Nẵng 3 ngày —
+          một lát cắt nhỏ nhưng đủ thể hiện vòng đời trải nghiệm AI.</div>
+        <div class="rationale-row"><span class="rationale-label">Vì sao:</span> Phạm vi hẹp giúp xử lý kỹ các nhánh
+          failure/recovery thay vì chỉ có luồng thuận lợi.</div>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 0B: DEMO PATH ========== -->
+    <div class="screen" id="screen-demo-path">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-flowmap')">←</button>
+        <span class="nav-title">Demo Path 5 phút</span>
+        <span class="nav-badge">07</span>
+      </div>
+
+      <div class="section-header mt-md">
+        <div class="section-tag">Script cho giảng viên</div>
+        <h2 class="heading-lg">Chạy đúng các nhánh quan trọng</h2>
+        <p class="text-body mt-xs">Đi theo thứ tự này để chứng minh đủ onboarding, AI hỗ trợ, sai sót, recovery,
+          agency và feedback hai chiều.</p>
+      </div>
+
+      <div class="demo-path mt-lg">
+        <div class="demo-step">
+          <div class="demo-time">0:00–0:30</div>
+          <div>
+            <div class="heading-sm">Flow map</div>
+            <p class="text-small">Nêu lát cắt: Đà Nẵng 3 ngày. Nhấn mạnh prototype không chỉ là chatbot mà có flow,
+              controls, cảnh báo và recovery.</p>
+          </div>
+        </div>
+        <div class="demo-step">
+          <div class="demo-time">0:30–1:15</div>
+          <div>
+            <div class="heading-sm">Onboarding T0</div>
+            <p class="text-small">Đi qua 3 bước: khả năng/giới hạn, quyền dữ liệu tùy chọn, câu hỏi đầu tiên.</p>
+          </div>
+        </div>
+        <div class="demo-step">
+          <div class="demo-time">1:15–2:15</div>
+          <div>
+            <div class="heading-sm">T2 Ask + T3 Explainability</div>
+            <p class="text-small">Chọn chips, kéo slider hotel để thấy AI hỏi trước khi đoán và xếp hạng theo tiêu
+              chí có thể chỉnh.</p>
+          </div>
+        </div>
+        <div class="demo-step">
+          <div class="demo-time">2:15–3:45</div>
+          <div>
+            <div class="heading-sm">T6 Failure + Recovery</div>
+            <p class="text-small">Bấm “Ngày này quá dày”, so sánh trước/sau, rồi áp dụng để thể hiện đường khôi phục
+              sau lỗi.</p>
+          </div>
+        </div>
+        <div class="demo-step">
+          <div class="demo-time">3:45–4:30</div>
+          <div>
+            <div class="heading-sm">T7 Evidence</div>
+            <p class="text-small">Chỉ ra nguồn, thời điểm cập nhật, trạng thái chưa xác nhận và lựa chọn giữ/đổi quán.
+            </p>
+          </div>
+        </div>
+        <div class="demo-step">
+          <div class="demo-time">4:30–5:00</div>
+          <div>
+            <div class="heading-sm">T9 Agency + Feedback 2×2</div>
+            <p class="text-small">Kết bằng ranh giới Act/Ask/Don't Act và ma trận feedback đủ 4 loại.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-lg">
+        <div class="heading-sm">Checklist chấm nhanh</div>
+        <ul class="compact-list mt-sm">
+          <li>AI đang làm gì và vì sao được/không được hành động.</li>
+          <li>AI có thể sai ở đâu, user phát hiện và hoàn tác thế nào.</li>
+          <li>Feedback nào giúp hệ thống học, feedback nào chỉ là tín hiệu yếu.</li>
+        </ul>
+      </div>
+
+      <div class="flex gap-sm mt-lg">
+        <button class="btn btn-ghost flex-1" onclick="goTo('screen-flowmap')">← Flow Map</button>
+        <button class="btn btn-primary flex-1" onclick="goTo('screen-onboarding-1')">Bắt đầu demo →</button>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 1: ONBOARDING — Welcome ========== -->
+    <div class="screen" id="screen-onboarding-1">
+      <div class="welcome-hero">
+        <div class="welcome-logo">✈️</div>
+        <h1 class="heading-xl">Xin chào!</h1>
+        <p class="text-body mt-sm" style="max-width: 320px;">
+          Tôi là <strong class="text-gradient">AI Travel Planner</strong> — trợ lý giúp bạn lập kế hoạch du lịch.
+        </p>
+      </div>
+
+      <div class="feature-list mt-lg">
+        <p class="heading-sm mb-sm">✅ Tôi có thể giúp bạn:</p>
+        <div class="feature-item can-do">
+          <span class="feature-icon">✓</span>
+          <span>Gợi ý lịch trình, địa điểm, và khách sạn phù hợp</span>
+        </div>
+        <div class="feature-item can-do">
+          <span class="feature-icon">✓</span>
+          <span>So sánh lựa chọn và giải thích vì sao đề xuất</span>
+        </div>
+        <div class="feature-item can-do">
+          <span class="feature-icon">✓</span>
+          <span>Điều chỉnh kế hoạch khi bạn thay đổi ý kiến</span>
+        </div>
+      </div>
+
+      <div class="feature-list mt-lg">
+        <p class="heading-sm mb-sm">⚠️ Tôi không thể:</p>
+        <div class="feature-item cannot-do">
+          <span class="feature-icon">✗</span>
+          <span>Đặt phòng hay thanh toán thay bạn</span>
+        </div>
+        <div class="feature-item cannot-do">
+          <span class="feature-icon">✗</span>
+          <span>Đảm bảo giá cả và giờ mở cửa luôn chính xác</span>
+        </div>
+        <div class="feature-item cannot-do">
+          <span class="feature-icon">✗</span>
+          <span>Biết sở thích của bạn nếu bạn không chia sẻ</span>
+        </div>
+      </div>
+
+      <div class="progress-dots mt-xl">
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+        <div class="progress-dot"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block mt-md" onclick="goTo('screen-onboarding-2')">
+        Tiếp tục
+      </button>
+
+      <div class="rationale-card">
+        <div class="rationale-row"><span class="rationale-label">AI biết gì:</span> Chưa biết gì về user — đây là lần
+          đầu.</div>
+        <div class="rationale-row"><span class="rationale-label">Thiết kế:</span> Nêu rõ CÓ THỂ và KHÔNG THỂ ngay từ đầu
+          để thiết lập kỳ vọng đúng. Tránh user tưởng AI biết hết.</div>
+        <div class="rationale-row"><span class="rationale-label">Rủi ro:</span> Nếu bỏ qua, user sẽ thất vọng khi AI
+          không đặt phòng được → mất niềm tin sớm.</div>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 2: ONBOARDING — Data Permissions ========== -->
+    <div class="screen" id="screen-onboarding-2">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-onboarding-1')">←</button>
+        <span class="nav-title">Kết nối dữ liệu</span>
+        <span class="nav-badge">Tùy chọn</span>
+      </div>
+
+      <div class="mt-lg">
+        <h2 class="heading-lg">Để gợi ý tốt hơn,<br>tôi có thể truy cập:</h2>
+        <p class="text-body mt-sm">Mọi quyền đều tùy chọn. Bạn có thể bật/tắt bất cứ lúc nào.</p>
+      </div>
+
+      <div class="flex flex-col gap-md mt-xl">
+        <div class="toggle-wrapper" onclick="toggleSwitch(this)">
+          <div class="toggle-info">
+            <div class="toggle-label">📅 Lịch cá nhân</div>
+            <div class="toggle-desc">Giúp tránh xếp lịch trùng ngày bận</div>
+          </div>
+          <div class="toggle-switch"></div>
+        </div>
+
+        <div class="toggle-wrapper" onclick="toggleSwitch(this)">
+          <div class="toggle-info">
+            <div class="toggle-label">💰 Ngân sách ước tính</div>
+            <div class="toggle-desc">Gợi ý khách sạn & hoạt động phù hợp túi tiền</div>
+          </div>
+          <div class="toggle-switch"></div>
+        </div>
+
+        <div class="toggle-wrapper" onclick="toggleSwitch(this)">
+          <div class="toggle-info">
+            <div class="toggle-label">🗺️ Lịch sử chuyến đi</div>
+            <div class="toggle-desc">Tránh gợi ý nơi bạn đã đến gần đây</div>
+          </div>
+          <div class="toggle-switch"></div>
+        </div>
+      </div>
+
+      <div class="status-info mt-lg" style="padding: 12px 16px; border-radius: var(--radius-md);">
+        <span>🔒</span>
+        <span>Dữ liệu chỉ dùng cho chuyến đi này. Bạn có thể xóa bất cứ lúc nào trong Cài đặt.</span>
+      </div>
+
+      <div class="progress-dots mt-xl">
+        <div class="progress-dot completed"></div>
+        <div class="progress-dot active"></div>
+        <div class="progress-dot"></div>
+      </div>
+
+      <div class="flex gap-sm mt-md">
+        <button class="btn btn-ghost flex-1" onclick="goTo('screen-onboarding-3')">
+          Bỏ qua
+        </button>
+        <button class="btn btn-primary flex-1" onclick="goTo('screen-onboarding-3')">
+          Tiếp tục
+        </button>
+      </div>
+
+      <div class="rationale-card">
+        <div class="rationale-row"><span class="rationale-label">AI biết gì:</span> Tên user (nếu đăng nhập), nhưng chưa
+          có dữ liệu cá nhân nào.</div>
+        <div class="rationale-row"><span class="rationale-label">Thiết kế:</span> Mỗi quyền có giải thích lợi ích cụ
+          thể. Cho phép bỏ qua — AI sẽ hỏi thủ công ở bước sau (T2).</div>
+        <div class="rationale-row"><span class="rationale-label">Agency:</span> Don't Act — AI không tự kết nối. User
+          phải chủ động bật từng quyền.</div>
+        <div class="rationale-row"><span class="rationale-label">Rủi ro:</span> Nếu biến thành form dài bắt buộc → user
+          bỏ app. Progressive disclosure tốt hơn.</div>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 3: ONBOARDING — First Question ========== -->
+    <div class="screen" id="screen-onboarding-3">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-onboarding-2')">←</button>
+        <span class="nav-title">Bắt đầu</span>
+      </div>
+
+      <div class="mt-xl" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+        <div class="ai-bubble">
+          <div class="ai-label">AI Travel Planner</div>
+          <p style="font-size: 1.0625rem; color: var(--text-primary);">Bạn muốn đi đâu? Kể cho tôi nghe về chuyến đi bạn
+            đang nghĩ tới! 🌴</p>
+        </div>
+
+        <div class="user-bubble mt-lg">
+          Tôi muốn đi Đà Nẵng 3 ngày cuối tuần này, đi với bạn gái
+        </div>
+      </div>
+
+      <div class="progress-dots mt-xl">
+        <div class="progress-dot completed"></div>
+        <div class="progress-dot completed"></div>
+        <div class="progress-dot active"></div>
+      </div>
+
+      <button class="btn btn-primary btn-block mt-md" onclick="goTo('screen-planning')">
+        Tiếp → AI hỏi thêm thông tin
+      </button>
+
+      <div class="rationale-card">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T0 — Onboarding lần đầu, gồm giới
+          hạn AI, quyền dữ liệu và câu hỏi mở đầu.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> Sau câu trả lời đầu tiên: Đà Nẵng, 3 ngày, đi cùng bạn gái.</li>
+          <li><strong>AI chưa biết gì?</strong> Ngân sách, phong cách du lịch, sở thích ăn uống, nơi ở ưa thích.</li>
+          <li><strong>AI giả định gì?</strong> User đang ở giai đoạn lập kế hoạch, chưa sẵn sàng đặt dịch vụ.</li>
+          <li><strong>Điều gì có thể sai?</strong> User tưởng AI có thể đặt phòng, biết giá real-time hoặc tự dùng dữ
+            liệu cá nhân.</li>
+          <li><strong>Hậu quả nếu sai?</strong> Mất niềm tin sớm, chia sẻ dữ liệu miễn cưỡng hoặc kỳ vọng vượt khả năng
+            prototype.</li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Có: quyền dữ liệu là toggle tùy chọn, user có thể bỏ qua và xóa
+            sau.</li>
+          <li><strong>Act / Ask / Don't Act?</strong> Don't Act với kết nối dữ liệu; Ask bằng câu hỏi mở đầu.</li>
+          <li><strong>User kiểm soát ở đâu?</strong> Nút Bỏ qua, từng toggle quyền, và bước tiếp sang T2 để sửa bối cảnh.
+          </li>
+          <li><strong>Feedback nào?</strong> Explicit User: bật/tắt quyền; Explicit System: mô tả lợi ích và giới hạn.
+          </li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> Thiết lập kỳ vọng đúng trước khi AI tạo lịch trình.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 4: PLANNING — Ask for context (T2) ========== -->
+    <div class="screen" id="screen-planning">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-onboarding-3')">←</button>
+        <span class="nav-title">Hỏi thêm thông tin</span>
+        <span class="nav-badge">T2 · Ask</span>
+      </div>
+
+      <div class="ai-bubble mt-lg">
+        <div class="ai-label">AI Travel Planner</div>
+        <p style="color: var(--text-primary);">Đà Nẵng 3 ngày — tuyệt vời! 🏖️</p>
+        <p class="text-body mt-sm">Để tạo lịch trình phù hợp nhất, tôi cần biết thêm vài điều. <strong
+            style="color: var(--text-accent);">Mỗi câu giúp tôi chọn đúng hơn:</strong></p>
+      </div>
+
+      <!-- Question Cards -->
+      <div class="flex flex-col gap-md mt-lg">
+        <div class="card">
+          <div class="flex items-center justify-between mb-sm">
+            <span class="heading-sm">🎯 Phong cách chuyến đi?</span>
+            <span class="text-caption">Giúp chọn địa điểm</span>
+          </div>
+          <div class="chip-group" id="style-chips">
+            <div class="chip" onclick="selectChip(this, 'style-chips')">🏖️ Biển & nghỉ dưỡng</div>
+            <div class="chip selected" onclick="selectChip(this, 'style-chips')">🍜 Ăn uống local</div>
+            <div class="chip" onclick="selectChip(this, 'style-chips')">📸 Tham quan & check-in</div>
+            <div class="chip" onclick="selectChip(this, 'style-chips')">🧘 Thư giãn, ít di chuyển</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-sm">
+            <span class="heading-sm">💰 Ngân sách cho chuyến đi?</span>
+            <span class="text-caption">Giúp chọn khách sạn</span>
+          </div>
+          <div class="chip-group" id="budget-chips">
+            <div class="chip" onclick="selectChip(this, 'budget-chips')">Tiết kiệm<br><span class="text-caption">&lt; 3
+                triệu</span></div>
+            <div class="chip selected" onclick="selectChip(this, 'budget-chips')">Trung bình<br><span
+                class="text-caption">3–6 triệu</span></div>
+            <div class="chip" onclick="selectChip(this, 'budget-chips')">Thoải mái<br><span class="text-caption">6–10
+                triệu</span></div>
+            <div class="chip" onclick="selectChip(this, 'budget-chips')">Sang trọng<br><span class="text-caption">&gt;
+                10 triệu</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center justify-between mb-sm">
+            <span class="heading-sm">🏠 Nơi ở ưa thích?</span>
+            <span class="text-caption">Giúp lọc khách sạn</span>
+          </div>
+          <div class="chip-group" id="stay-chips">
+            <div class="chip" onclick="selectChip(this, 'stay-chips')">Khách sạn</div>
+            <div class="chip selected" onclick="selectChip(this, 'stay-chips')">Resort ven biển</div>
+            <div class="chip" onclick="selectChip(this, 'stay-chips')">Homestay</div>
+            <div class="chip" onclick="selectChip(this, 'stay-chips')">Không quan trọng</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-sm mt-lg">
+        <button class="btn btn-ghost flex-1" onclick="goTo('screen-hotel')" style="font-size: 0.8125rem;">
+          ⏭ Bỏ qua, tạo lịch chung
+        </button>
+        <button class="btn btn-primary flex-1" onclick="goTo('screen-hotel')">
+          Tạo lịch trình →
+        </button>
+      </div>
+
+      <div class="status-info mt-sm" style="padding: 10px 14px;">
+        <span>💡</span>
+        <span class="text-small">Nếu bỏ qua, tôi sẽ dùng giả định mặc định và nêu rõ để bạn kiểm tra.</span>
+      </div>
+
+      <div class="rationale-card">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T2 — AI hỏi thêm bối cảnh trước khi tạo
+          lịch.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> Đà Nẵng 3 ngày, đi cặp đôi, user đang cần kế hoạch cuối tuần.</li>
+          <li><strong>AI chưa biết gì?</strong> Mục tiêu chuyến đi, ngân sách, nơi ở và mức ưu tiên nghỉ dưỡng.</li>
+          <li><strong>AI giả định gì?</strong> Ba câu hỏi này là đủ để tạo bản nháp đầu tiên mà không làm user mệt.</li>
+          <li><strong>Điều gì có thể sai?</strong> Nếu đoán sai style hoặc ngân sách, lịch trình và hotel sẽ lệch nhu cầu.
+          </li>
+          <li><strong>Hậu quả nếu sai?</strong> User phải sửa nhiều, cảm giác AI “không hiểu mình”.</li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Có: chips sáng lên, user bấm lại lựa chọn hoặc bỏ qua để dùng
+            default.</li>
+          <li><strong>Act / Ask / Don't Act?</strong> Ask, vì thiếu context có ảnh hưởng lớn nhưng dễ hỏi ngắn gọn.</li>
+          <li><strong>User kiểm soát ở đâu?</strong> Chọn chip, đổi chip, bấm “Bỏ qua, tạo lịch chung” hoặc “Tạo lịch
+            trình”.</li>
+          <li><strong>Feedback nào?</strong> Explicit User: chọn chip; Implicit System: chip selected; Explicit System:
+            lý do từng câu hỏi.</li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> Thu đủ tín hiệu nền để AI tạo lịch ít phải sửa hơn ở các bước sau.
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 5: HOTEL COMPARISON (T3) ========== -->
+    <div class="screen" id="screen-hotel">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-planning')">←</button>
+        <span class="nav-title">So sánh khách sạn</span>
+        <span class="nav-badge">T3 · Explainability</span>
+      </div>
+
+      <div class="ai-bubble mt-lg">
+        <div class="ai-label">AI Travel Planner</div>
+        <p style="color: var(--text-primary);">Tôi tìm được 3 khách sạn phù hợp. Đây là cách tôi xếp hạng:</p>
+      </div>
+
+      <!-- Criteria Explanation -->
+      <div class="card mt-md" style="background: rgba(51,141,255,0.06);">
+        <div class="flex items-center justify-between mb-sm">
+          <span class="heading-sm">📊 Tiêu chí xếp hạng</span>
+          <span class="badge badge-primary">Điều chỉnh được</span>
+        </div>
+        <div class="flex flex-col gap-md">
+          <div class="criteria-slider">
+            <label>
+              <span>📍 Gần biển</span>
+              <span id="beach-val" style="color: var(--primary-400); font-weight: 600;">Ưu tiên cao</span>
+            </label>
+            <input type="range" min="1" max="5" value="5" oninput="updateCriteria()">
+          </div>
+          <div class="criteria-slider">
+            <label>
+              <span>⭐ Đánh giá</span>
+              <span id="rating-val" style="color: var(--primary-400); font-weight: 600;">Trung bình</span>
+            </label>
+            <input type="range" min="1" max="5" value="3" oninput="updateCriteria()">
+          </div>
+          <div class="criteria-slider">
+            <label>
+              <span>💰 Giá thấp</span>
+              <span id="price-val" style="color: var(--primary-400); font-weight: 600;">Trung bình</span>
+            </label>
+            <input type="range" min="1" max="5" value="3" oninput="updateCriteria()">
+          </div>
+        </div>
+        <p class="text-caption mt-md">💡 Kéo thanh để thay đổi ưu tiên — danh sách sẽ cập nhật tự động</p>
+      </div>
+
+      <div class="fact-inference-grid mt-md">
+        <div class="fact-box">
+          <span class="badge badge-success">Dữ kiện</span>
+          <p class="text-small mt-xs">Rating, giá/đêm và khoảng cách tới biển là dữ liệu hiển thị để user kiểm tra.</p>
+        </div>
+        <div class="fact-box">
+          <span class="badge badge-ask">Suy luận AI</span>
+          <p class="text-small mt-xs">Thứ tự đề xuất dựa trên tiêu chí user chọn: gần biển, rating, giá thấp và bối cảnh
+            đi cặp đôi.</p>
+        </div>
+        <div class="fact-box">
+          <span class="badge badge-primary">Trạng thái</span>
+          <p class="text-small mt-xs">Đây mới là đề xuất xếp hạng; AI chưa đặt phòng hay gửi thông tin cho khách sạn.</p>
+        </div>
+      </div>
+
+      <!-- Hotel Cards -->
+      <div class="flex flex-col gap-md mt-lg" id="hotel-list">
+        <div class="hotel-card recommended" id="hotel-b">
+          <div class="hotel-img" style="background: linear-gradient(135deg, #1e3a5f, #2d6a9f);">
+            🏖️
+            <span class="hotel-recommend-badge">⭐ Đề xuất</span>
+          </div>
+          <div class="hotel-body">
+            <div class="hotel-name">Seashore Resort</div>
+            <div class="hotel-stats">
+              <div class="hotel-stat">⭐ 4.8</div>
+              <div class="hotel-stat">💰 2.1M/đêm</div>
+              <div class="hotel-stat">📍 50m → biển</div>
+            </div>
+            <div class="status-info mt-sm" style="padding: 8px 12px; font-size: 0.75rem;">
+              <span>💡</span>
+              <span>Đề xuất vì bạn ưu tiên <strong>gần biển</strong> và đi cùng bạn gái</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hotel-card" id="hotel-a">
+          <div class="hotel-img" style="background: linear-gradient(135deg, #1a2744, #2a4a6f);">
+            🏨
+          </div>
+          <div class="hotel-body">
+            <div class="hotel-name">Ocean View Hotel</div>
+            <div class="hotel-stats">
+              <div class="hotel-stat">⭐ 4.5</div>
+              <div class="hotel-stat">💰 1.2M/đêm</div>
+              <div class="hotel-stat">📍 200m → biển</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hotel-card" id="hotel-c">
+          <div class="hotel-img" style="background: linear-gradient(135deg, #1a2030, #2a3548);">
+            🏠
+          </div>
+          <div class="hotel-body">
+            <div class="hotel-name">Downtown Homestay</div>
+            <div class="hotel-stats">
+              <div class="hotel-stat">⭐ 4.2</div>
+              <div class="hotel-stat">💰 800K/đêm</div>
+              <div class="hotel-stat">📍 1.5km → biển</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block mt-lg" onclick="goTo('screen-itinerary')">
+        Chọn Seashore Resort → Xem lịch trình
+      </button>
+
+      <div class="rationale-card">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T3 — so sánh khách sạn với tiêu chí xếp
+          hạng có thể chỉnh.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> User thích biển, đi cặp đôi, ngân sách trung bình và ưu tiên resort ven biển.
+          </li>
+          <li><strong>AI chưa biết gì?</strong> Mức linh hoạt ngân sách, tiện ích phòng, chính sách hủy, tình trạng phòng
+            thật.</li>
+          <li><strong>AI giả định gì?</strong> Gần biển quan trọng hơn giá rẻ vì user chọn “Resort ven biển”.</li>
+          <li><strong>Điều gì có thể sai?</strong> Rating, giá hoặc khoảng cách có thể cũ; suy luận ưu tiên gần biển có
+            thể quá mạnh.</li>
+          <li><strong>Hậu quả nếu sai?</strong> User chọn hotel đắt hơn nhu cầu hoặc bỏ lỡ lựa chọn rẻ/phù hợp hơn.</li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Có: dữ kiện hiện cạnh từng hotel, slider đổi thứ tự ngay, user
+            chọn lại.</li>
+          <li><strong>Act / Ask / Don't Act?</strong> Ask: AI chỉ đề xuất/xếp hạng, chưa đặt phòng hay thanh toán.</li>
+          <li><strong>User kiểm soát ở đâu?</strong> Kéo 3 slider, so sánh 3 lựa chọn, chọn hotel hoặc quay lại T2.</li>
+          <li><strong>Feedback nào?</strong> Explicit User: slider; Explicit System: “Đề xuất vì…”; Implicit System:
+            badge/border hotel đầu.</li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> Biến đề xuất AI thành quyết định có tiêu chí, không phải “hộp đen”.
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 6: ITINERARY + RECOVERY (T6) ========== -->
+    <div class="screen" id="screen-itinerary">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-hotel')">←</button>
+        <span class="nav-title">Lịch trình · Ngày 2</span>
+        <span class="nav-badge">T6 · Sai sót</span>
+      </div>
+
+      <!-- Warning Banner -->
+      <div class="status-warning mt-lg" id="itinerary-warning">
+        <span>⚠️</span>
+        <span><strong>Ngày 2 có 6 điểm đến</strong> — ước tính 8 tiếng di chuyển, ít thời gian nghỉ</span>
+      </div>
+
+      <div class="fact-inference-grid mt-md">
+        <div class="fact-box">
+          <span class="badge badge-success">Dữ kiện</span>
+          <p class="text-small mt-xs">Địa điểm, khoảng cách và thời lượng tham quan là dữ liệu dùng để tính lịch.</p>
+        </div>
+        <div class="fact-box">
+          <span class="badge badge-ask">Suy luận AI</span>
+          <p class="text-small mt-xs">“Quá dày” là đánh giá từ AI dựa trên tổng thời gian di chuyển và ít khoảng nghỉ.</p>
+        </div>
+        <div class="fact-box">
+          <span class="badge badge-primary">Trạng thái</span>
+          <p class="text-small mt-xs">Lịch này là bản nháp đề xuất; user có thể bỏ điểm, chuyển ngày hoặc giữ bản cũ.</p>
+        </div>
+      </div>
+
+      <!-- Itinerary Timeline -->
+      <div class="timeline mt-lg" id="itinerary-timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot">🌅</div>
+          <div class="timeline-content">
+            <div class="timeline-title">7:00 — Bình minh tại Bãi biển Mỹ Khê</div>
+            <div class="timeline-meta">⏱ 1 tiếng · 📍 Cách hotel 50m</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">🍜</div>
+          <div class="timeline-content">
+            <div class="timeline-title">8:30 — Mì Quảng Bà Mua</div>
+            <div class="timeline-meta">⏱ 45 phút · 📍 2km</div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">⛰️</div>
+          <div class="timeline-content">
+            <div class="timeline-title">10:00 — Bà Nà Hills</div>
+            <div class="timeline-meta">⏱ 4 tiếng · 📍 25km · 🚕 40 phút</div>
+          </div>
+        </div>
+
+        <div class="timeline-item" id="item-cau-rong">
+          <div class="timeline-dot warning">🐉</div>
+          <div class="timeline-content">
+            <div class="timeline-title">15:00 — Cầu Rồng</div>
+            <div class="timeline-meta">⏱ 30 phút · 📍 26km · 🚕 45 phút</div>
+            <div class="timeline-warning">⚠️ Di chuyển 45 phút ngay sau Bà Nà — có thể mệt</div>
+            <div class="timeline-actions">
+              <button class="btn btn-sm btn-ghost" onclick="removeItem('item-cau-rong')">Bỏ điểm này</button>
+              <button class="btn btn-sm btn-secondary">Chuyển ngày 3</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item" id="item-son-tra">
+          <div class="timeline-dot warning">🏔️</div>
+          <div class="timeline-content">
+            <div class="timeline-title">16:00 — Bán đảo Sơn Trà</div>
+            <div class="timeline-meta">⏱ 2 tiếng · 📍 10km</div>
+            <div class="timeline-warning">⚠️ Sơn Trà cần ít nhất 2h — khó kịp nếu đi Cầu Rồng</div>
+            <div class="timeline-actions">
+              <button class="btn btn-sm btn-ghost" onclick="removeItem('item-son-tra')">Bỏ điểm này</button>
+              <button class="btn btn-sm btn-secondary">Chuyển ngày 3</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot">🦐</div>
+          <div class="timeline-content">
+            <div class="timeline-title">19:00 — Hải sản Bé Mặn</div>
+            <div class="timeline-meta">⏱ 1.5 tiếng · 📍 5km</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Feedback Button -->
+      <div class="mt-lg" id="feedback-section">
+        <button class="btn btn-accent btn-block" onclick="showRecovery()">
+          ✋ Ngày này quá dày — giúp tôi điều chỉnh
+        </button>
+        <p class="text-caption text-center mt-xs">Explicit User Feedback → Báo vấn đề cụ thể</p>
+      </div>
+
+      <!-- Recovery Section (initially hidden) -->
+      <div class="hidden mt-lg" id="recovery-section">
+        <div class="ai-bubble slide-up">
+          <div class="ai-label">AI Travel Planner — Recovery</div>
+          <p style="color: var(--text-primary);">Tôi hiểu! Ngày 2 đang quá dày. Đề xuất của tôi:</p>
+          <ul class="text-body mt-sm" style="padding-left: 20px;">
+            <li><strong>Bỏ Cầu Rồng</strong> khỏi ngày 2 (chuyển sang tối ngày 3 để xem phun lửa)</li>
+            <li><strong>Bỏ Sơn Trà</strong> buổi chiều (chuyển sang sáng ngày 3)</li>
+            <li>Thêm <strong>2 tiếng nghỉ trưa</strong> sau Bà Nà Hills</li>
+          </ul>
+        </div>
+
+        <!-- Before / After Comparison -->
+        <div class="compare-columns mt-lg slide-up">
+          <div class="compare-col compare-before">
+            <div class="compare-label">❌ Trước</div>
+            <p class="text-small">6 điểm · 8h di chuyển</p>
+            <p class="text-small">Không có giờ nghỉ</p>
+            <p class="text-small">Sơn Trà chỉ 30 phút</p>
+          </div>
+          <div class="compare-col compare-after">
+            <div class="compare-label">✅ Sau</div>
+            <p class="text-small">4 điểm · 4h di chuyển</p>
+            <p class="text-small">2h nghỉ trưa</p>
+            <p class="text-small">Sơn Trà 2h vào sáng ngày 3</p>
+          </div>
+        </div>
+
+        <div class="status-success mt-md slide-up" style="padding: 12px 16px;">
+          <span>✅</span>
+          <span>Thay đổi chỉ áp dụng cho ngày 2. Ngày 1 và 3 giữ nguyên.</span>
+        </div>
+
+        <div class="flex gap-sm mt-md">
+          <button class="btn btn-secondary flex-1" onclick="goTo('screen-itinerary')">
+            ↩ Giữ bản cũ
+          </button>
+          <button class="btn btn-success flex-1" onclick="goTo('screen-outdated')">
+            ✓ Áp dụng thay đổi
+          </button>
+        </div>
+
+        <div class="status-info mt-sm" style="padding: 10px 14px;">
+          <span>🧠</span>
+          <span class="text-small">Tôi ghi nhớ: bạn thích lịch trình thoải mái hơn. Sẽ áp dụng cho các ngày còn
+            lại.</span>
+        </div>
+      </div>
+
+      <div class="rationale-card mt-lg">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T6 — AI tạo lịch quá dày rồi hỗ trợ
+          recovery.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> Địa điểm phổ biến, khoảng cách, thời gian tham quan và lịch ngày 2 hiện tại.
+          </li>
+          <li><strong>AI chưa biết gì?</strong> Sức khỏe user, tốc độ di chuyển, mức chịu đi bộ và nhu cầu nghỉ riêng.
+          </li>
+          <li><strong>AI giả định gì?</strong> User muốn tối đa hóa trải nghiệm nên có thể chấp nhận nhiều điểm trong
+            ngày.</li>
+          <li><strong>Điều gì có thể sai?</strong> Lịch “hấp dẫn” nhưng không thực tế: 6 điểm, 8h di chuyển, ít nghỉ.</li>
+          <li><strong>Hậu quả nếu sai?</strong> User mệt, trễ lịch, bỏ bữa/điểm đến và giảm chất lượng chuyến đi.</li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Có: banner cảnh báo, nút “quá dày”, so sánh trước/sau và giữ bản
+            cũ.</li>
+          <li><strong>Act / Ask / Don't Act?</strong> Ask: AI đề xuất sửa nhưng cần user áp dụng; không tự xóa lịch.</li>
+          <li><strong>User kiểm soát ở đâu?</strong> Bỏ từng điểm, chuyển ngày, bấm feedback, chọn “Giữ bản cũ” hoặc “Áp
+            dụng”.</li>
+          <li><strong>Feedback nào?</strong> Explicit System: cảnh báo; Explicit User: “Ngày này quá dày”; Implicit User:
+            giữ bản cũ.</li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> Biến lỗi AI thành vòng sửa có kiểm soát, chứng minh recovery end to
+            end.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 7: OUTDATED INFO (T7) ========== -->
+    <div class="screen" id="screen-outdated">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-itinerary')">←</button>
+        <span class="nav-title">Thông tin lỗi thời</span>
+        <span class="nav-badge">T7 · Bằng chứng</span>
+      </div>
+
+      <div class="ai-bubble mt-lg">
+        <div class="ai-label">AI Travel Planner</div>
+        <p style="color: var(--text-primary);">Lịch trình đã cập nhật! Lưu ý: một số thông tin có thể không còn chính
+          xác 👇</p>
+      </div>
+
+      <!-- Item with warning badge -->
+      <div class="card mt-lg" style="border-color: rgba(234,179,8,0.3);">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="heading-sm">🍜 Mì Quảng Bà Mua</div>
+            <div class="text-small mt-xs">Ngày 2 · 8:30 sáng</div>
+          </div>
+          <span class="badge badge-warning pulse">🟡 Thông tin cũ</span>
+        </div>
+
+        <!-- Evidence Panel -->
+        <div class="evidence-panel mt-md" id="evidence-panel">
+          <div class="flex items-center justify-between mb-sm">
+            <span class="heading-sm" style="font-size: 0.8125rem;">📋 Thông tin chi tiết</span>
+          </div>
+          <div class="evidence-row">
+            <span class="evidence-label">Nguồn</span>
+            <span class="evidence-value">Google Maps</span>
+          </div>
+          <div class="evidence-row">
+            <span class="evidence-label">Cập nhật lần cuối</span>
+            <span class="evidence-value uncertain">Tháng 3/2025 — 3 tháng trước</span>
+          </div>
+          <div class="evidence-row">
+            <span class="evidence-label">Giờ mở cửa</span>
+            <span class="evidence-value uncertain">6:00 – 14:00 (có thể đã thay đổi)</span>
+          </div>
+          <div class="evidence-row">
+            <span class="evidence-label">Trạng thái</span>
+            <span class="evidence-value uncertain">❓ Chưa xác nhận được</span>
+          </div>
+          <div class="evidence-row">
+            <span class="evidence-label">Giá tham khảo</span>
+            <span class="evidence-value uncertain">35.000₫ (từ tháng 3)</span>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-sm mt-md">
+          <a href="#" class="btn btn-sm btn-secondary flex-1" style="text-decoration:none;">
+            🔗 Kiểm tra Google Maps
+          </a>
+          <a href="#" class="btn btn-sm btn-secondary flex-1" style="text-decoration:none;">
+            📞 Gọi quán
+          </a>
+        </div>
+      </div>
+
+      <!-- AI suggests alternatives -->
+      <div class="ai-bubble mt-lg">
+        <div class="ai-label">AI Travel Planner</div>
+        <p style="color: var(--text-primary);">Nếu quán đã đóng, tôi có 2 quán Mì Quảng khác gần đó với thông tin mới
+          hơn:</p>
+      </div>
+
+      <div class="flex flex-col gap-sm mt-md">
+        <div class="card card-interactive" onclick="this.classList.toggle('selected')">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="heading-sm">🍜 Mì Quảng Bà Vị</div>
+              <div class="text-small">400m · ⭐ 4.6 · Cập nhật: <span style="color: var(--success-400);">tháng
+                  6/2025</span></div>
+            </div>
+            <span class="badge badge-success">✓ Mới</span>
+          </div>
+        </div>
+        <div class="card card-interactive" onclick="this.classList.toggle('selected')">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="heading-sm">🍜 Quán Mì Quảng 1A</div>
+              <div class="text-small">800m · ⭐ 4.4 · Cập nhật: <span style="color: var(--success-400);">tháng
+                  5/2025</span></div>
+            </div>
+            <span class="badge badge-success">✓ Mới</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-sm mt-lg">
+        <button class="btn btn-secondary flex-1">Giữ Bà Mua</button>
+        <button class="btn btn-primary flex-1" onclick="goTo('screen-booking')">Đổi sang Bà Vị →</button>
+      </div>
+
+      <div class="rationale-card mt-lg">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T7 — thông tin có thể lỗi thời, cần
+          bằng chứng và lựa chọn thay thế.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> Nguồn là Google Maps, cập nhật tháng 3/2025, giờ mở cửa và giá tham khảo.</li>
+          <li><strong>AI chưa biết gì?</strong> Quán hiện còn mở không, giá/giờ hiện tại đúng không, user có muốn đổi
+            không.</li>
+          <li><strong>AI giả định gì?</strong> Nguồn 3 tháng trước có rủi ro vừa đủ để cảnh báo nhưng chưa đủ để tự thay.
+          </li>
+          <li><strong>Điều gì có thể sai?</strong> Quán đóng cửa, đổi giờ, tăng giá hoặc thông tin thay thế cũng không còn
+            mới.</li>
+          <li><strong>Hậu quả nếu sai?</strong> User đến nơi quán đóng, mất thời gian di chuyển và ảnh hưởng lịch ngày 2.
+          </li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Có: badge cũ, panel nguồn, nút kiểm tra/gọi quán, giữ hoặc đổi.
+          </li>
+          <li><strong>Act / Ask / Don't Act?</strong> Don't Act: AI không tự đổi quán; Ask bằng lựa chọn giữ/đổi.</li>
+          <li><strong>User kiểm soát ở đâu?</strong> Kiểm tra Google Maps, gọi quán, chọn quán thay thế hoặc giữ Bà Mua.
+          </li>
+          <li><strong>Feedback nào?</strong> Explicit System: nguồn/thời điểm; Explicit User: Đổi sang Bà Vị hoặc Giữ Bà
+            Mua.</li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> User vẫn có phương án ăn uống mà hiểu rõ độ chắc chắn của AI.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 8: BOOKING — AGENCY (T9) ========== -->
+    <div class="screen" id="screen-booking">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-outdated')">←</button>
+        <span class="nav-title">Đặt dịch vụ</span>
+        <span class="nav-badge">T9 · Agency</span>
+      </div>
+
+      <div class="ai-bubble mt-lg">
+        <div class="ai-label">AI Travel Planner</div>
+        <p style="color: var(--text-primary);">Lịch trình đã hoàn tất! Bây giờ bạn muốn đặt dịch vụ không?</p>
+        <p class="text-body mt-sm">Dưới đây là những gì tôi <strong style="color: var(--success-400);">được
+            làm</strong>, <strong style="color: var(--warning-400);">cần hỏi bạn</strong>, và <strong
+            style="color: var(--error-400);">không được phép làm</strong>:</p>
+      </div>
+
+      <div class="flex flex-col gap-md mt-lg">
+        <!-- ACT -->
+        <div class="booking-action" style="border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05);">
+          <div class="booking-level">
+            <span class="badge badge-act">✅ Act</span>
+          </div>
+          <div class="booking-info">
+            <div class="booking-title">Tóm tắt lựa chọn của bạn</div>
+            <div class="booking-desc">Rủi ro thấp · AI tự tạo · Bạn xem lại</div>
+            <div class="card mt-sm" style="padding: 12px; background: rgba(30,41,59,0.5);">
+              <div class="text-small"><strong>🏨 Seashore Resort</strong> · 3 đêm · 2 người</div>
+              <div class="text-small">📅 Check-in: Thứ 6, 18/07 · Check-out: Thứ 2, 21/07</div>
+              <div class="text-small">💰 Tổng ước tính: 6.3M VNĐ (chưa bao gồm thuế)</div>
+            </div>
+            <div class="status-success mt-sm" style="padding: 8px 12px; font-size: 0.75rem;">
+              <span>✅</span>
+              <span>AI tự tổng hợp — dễ kiểm tra, dễ sửa, không có tác động</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASK -->
+        <div class="booking-action" style="border-color: rgba(234,179,8,0.3); background: rgba(234,179,8,0.05);">
+          <div class="booking-level">
+            <span class="badge badge-ask">❓ Ask</span>
+          </div>
+          <div class="booking-info">
+            <div class="booking-title">Điền form đặt phòng</div>
+            <div class="booking-desc">AI điền sẵn · Bạn kiểm tra & xác nhận</div>
+            <div class="card mt-sm" style="padding: 12px; background: rgba(30,41,59,0.5);">
+              <div class="flex flex-col gap-sm">
+                <div class="flex justify-between text-small">
+                  <span style="color: var(--text-tertiary);">Tên khách:</span>
+                  <span style="color: var(--warning-400);">⚠️ Cần bạn nhập</span>
+                </div>
+                <div class="flex justify-between text-small">
+                  <span style="color: var(--text-tertiary);">Loại phòng:</span>
+                  <span>Deluxe Sea View <span class="badge badge-primary" style="font-size: 0.65rem;">AI gợi
+                      ý</span></span>
+                </div>
+                <div class="flex justify-between text-small">
+                  <span style="color: var(--text-tertiary);">Yêu cầu đặc biệt:</span>
+                  <span style="color: var(--text-tertiary); font-style: italic;">Tùy chọn</span>
+                </div>
+              </div>
+            </div>
+            <div class="status-warning mt-sm" style="padding: 8px 12px; font-size: 0.75rem;">
+              <span>❓</span>
+              <span>AI điền sẵn loại phòng dựa trên ngân sách — bạn cần kiểm tra trước khi gửi</span>
+            </div>
+            <button class="btn btn-sm btn-secondary mt-sm">👀 Kiểm tra & xác nhận form</button>
+          </div>
+        </div>
+
+        <!-- DON'T ACT -->
+        <div class="booking-action" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05);">
+          <div class="booking-level">
+            <span class="badge badge-dont-act">🚫 Don't Act</span>
+          </div>
+          <div class="booking-info">
+            <div class="booking-title">Thanh toán & đặt chỗ</div>
+            <div class="booking-desc">Rủi ro cao · AI KHÔNG được phép thực hiện</div>
+            <div class="tooltip-wrapper mt-sm">
+              <button class="btn btn-sm btn-danger btn-block" disabled>
+                🔒 Thanh toán 6.3M VNĐ
+              </button>
+              <div class="tooltip"
+                style="opacity: 1; position: relative; transform: none; margin-top: 8px; text-align: center;">
+                AI không thể thanh toán thay bạn.<br>Bấm để chuyển tới trang đặt phòng của khách sạn.
+              </div>
+            </div>
+            <div class="status-error mt-sm" style="padding: 8px 12px; font-size: 0.75rem;">
+              <span>🚫</span>
+              <span>Thanh toán liên quan tài chính, khó hoàn tác → AI phải dừng, chuyển quyền cho bạn</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block mt-lg" onclick="goTo('screen-feedback')">
+        Tiếp → Ma trận Feedback →
+      </button>
+
+      <div class="rationale-card mt-md">
+        <div class="rationale-row"><span class="rationale-label">Kịch bản:</span> T9 — ranh giới tự chủ khi chuẩn bị đặt
+          dịch vụ.</div>
+        <ol class="rationale-checklist">
+          <li><strong>AI biết gì?</strong> Hotel đã chọn, số đêm, ngày check-in/out, ước tính chi phí và loại phòng gợi ý.
+          </li>
+          <li><strong>AI chưa biết gì?</strong> Tên khách, thông tin thanh toán, yêu cầu đặc biệt và ý định đặt thật.</li>
+          <li><strong>AI giả định gì?</strong> Tóm tắt là rủi ro thấp; form cần review; thanh toán là rủi ro cao.</li>
+          <li><strong>Điều gì có thể sai?</strong> Sai tên/ngày/loại phòng, tổng tiền chưa gồm thuế, user chưa sẵn sàng
+            đặt.</li>
+          <li><strong>Hậu quả nếu sai?</strong> Mất tiền, đặt nhầm dịch vụ hoặc cần hủy phức tạp.</li>
+          <li><strong>Dễ phát hiện & hoàn tác?</strong> Tóm tắt dễ sửa; form cần kiểm tra; thanh toán khó hoàn tác nên bị
+            chặn.</li>
+          <li><strong>Act / Ask / Don't Act?</strong> Act với tóm tắt, Ask với form đặt phòng, Don't Act với thanh toán.
+          </li>
+          <li><strong>User kiểm soát ở đâu?</strong> Kiểm tra form, xác nhận thủ công, và chỉ user mới chuyển sang trang
+            thanh toán.</li>
+          <li><strong>Feedback nào?</strong> Explicit System: lý do từng mức; Implicit System: nút thanh toán disabled +
+            tooltip.</li>
+          <li><strong>Giúp mục tiêu thế nào?</strong> Cho user tận dụng AI mà không mất quyền quyết định ở hành động rủi ro
+            cao.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ========== SCREEN 9: FEEDBACK MATRIX 2×2 ========== -->
+    <div class="screen" id="screen-feedback">
+      <div class="nav-bar">
+        <button class="back-btn" onclick="goTo('screen-booking')">←</button>
+        <span class="nav-title">Ma trận Feedback 2×2</span>
+        <span class="nav-badge">Feedback</span>
+      </div>
+
+      <div class="section-header mt-md">
+        <div class="section-tag">Thiết kế feedback hai chiều</div>
+        <h2 class="heading-lg">User ↔ System</h2>
+        <p class="text-body mt-xs">Đủ 4 loại: Explicit & Implicit × User & System</p>
+      </div>
+
+      <!-- CELL 1: Explicit User → System -->
+      <div class="card mt-md" style="border-left: 3px solid var(--accent-400);">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="badge badge-accent">1</span>
+          <span class="heading-sm">Explicit User → System</span>
+        </div>
+        <p class="text-body">Người dùng <strong>chủ động</strong> nói cho hệ thống biết:</p>
+        <div class="flex flex-col gap-sm mt-md">
+          <div class="status-bar"
+            style="background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.15); color: var(--text-secondary);">
+            <span>📋</span> <strong>T6:</strong> Bấm "Ngày này quá dày" → AI biết cần bớt điểm
+          </div>
+          <div class="status-bar"
+            style="background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.15); color: var(--text-secondary);">
+            <span>🍜</span> <strong>T7:</strong> Chọn "Đổi quán" → AI biết thông tin cũ không chấp nhận được
+          </div>
+          <div class="status-bar"
+            style="background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.15); color: var(--text-secondary);">
+            <span>🏨</span> <strong>T3:</strong> Kéo slider ưu tiên "Giá thấp" → AI thay đổi xếp hạng
+          </div>
+        </div>
+        <div class="feedback-rationale-grid mt-md">
+          <div><strong>1. Thời điểm:</strong> Khi user review kết quả sau hành động AI: T3, T6, T7.</div>
+          <div><strong>2. Mục tiêu:</strong> Sửa đề xuất hiện tại và giảm công sửa ở các bước sau.</div>
+          <div><strong>3. Vì sao explicit:</strong> Vấn đề cần nhãn rõ; bỏ qua không đủ biết user đang nghĩ gì.</div>
+          <div><strong>4. Ý nghĩa tín hiệu:</strong> “Quá dày” khác “đổi quán” và khác “ưu tiên giá thấp”.</div>
+          <div><strong>5. Phản ứng ngay:</strong> AI mở recovery, đổi ranking hotel hoặc chuyển sang lựa chọn mới.</div>
+          <div><strong>6. Cá nhân hóa:</strong> Ghi nhớ nhẹ cho chuyến này: lịch thoải mái hơn, ưu tiên đã chọn.</div>
+          <div><strong>7. User kiểm soát:</strong> User thấy nút mình bấm, có thể giữ bản cũ hoặc đổi lại slider.</div>
+          <div><strong>8. Gián đoạn:</strong> Chỉ hỏi khi user đang review, không chèn câu hỏi giữa lúc đọc lịch.</div>
+        </div>
+      </div>
+
+      <!-- CELL 2: Implicit User → System -->
+      <div class="card mt-md" style="border-left: 3px solid var(--primary-400);">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="badge badge-primary">2</span>
+          <span class="heading-sm">Implicit User → System</span>
+        </div>
+        <p class="text-body">Hệ thống <strong>quan sát hành vi</strong> (không hỏi trực tiếp):</p>
+        <div class="flex flex-col gap-sm mt-md">
+          <div class="status-bar"
+            style="background: rgba(51,141,255,0.08); border: 1px solid rgba(51,141,255,0.15); color: var(--text-secondary);">
+            <span>🏨</span> User bỏ qua hotel rẻ nhất → <em>có thể</em> ưu tiên chất lượng hơn giá
+          </div>
+          <div class="status-bar"
+            style="background: rgba(51,141,255,0.08); border: 1px solid rgba(51,141,255,0.15); color: var(--text-secondary);">
+            <span>⏱️</span> User xem lâu mục ăn uống → <em>có thể</em> quan tâm F&B
+          </div>
+          <div class="status-bar"
+            style="background: rgba(51,141,255,0.08); border: 1px solid rgba(51,141,255,0.15); color: var(--text-secondary);">
+            <span>↩️</span> User bấm "Giữ bản cũ" ở T6 → <em>có thể</em> thích lịch dày HOẶC chưa đọc kỹ
+          </div>
+        </div>
+        <div class="feedback-rationale-grid mt-md">
+          <div><strong>1. Thời điểm:</strong> Trong lúc user xem, bỏ qua, dừng lâu hoặc giữ bản cũ.</div>
+          <div><strong>2. Mục tiêu:</strong> Giảm ma sát bằng cách học từ hành vi mà không hỏi thêm liên tục.</div>
+          <div><strong>3. Vì sao implicit:</strong> Tín hiệu hữu ích nhưng chưa đủ chắc để biến thành câu hỏi bắt buộc.
+          </div>
+          <div><strong>4. Ý nghĩa tín hiệu:</strong> Bỏ qua hotel rẻ có thể là thích chất lượng, nhưng cũng có thể chưa
+            đọc.</div>
+          <div><strong>5. Phản ứng ngay:</strong> Không tự hành động; chỉ điều chỉnh ưu tiên nhẹ hoặc gợi ý kiểm tra.</div>
+          <div><strong>6. Cá nhân hóa:</strong> Tổng hợp nhiều tín hiệu trước khi ghi nhớ preference.</div>
+          <div><strong>7. User kiểm soát:</strong> Rationale nói rõ hành vi ≠ ý định; user có nút/chip để sửa explicit.
+          </div>
+          <div><strong>8. Gián đoạn:</strong> Ít gián đoạn nhất, vì hệ thống quan sát nền thay vì pop-up hỏi liên tục.
+          </div>
+        </div>
+      </div>
+
+      <!-- CELL 3: Explicit System → User -->
+      <div class="card mt-md" style="border-left: 3px solid var(--success-400);">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="badge badge-success">3</span>
+          <span class="heading-sm">Explicit System → User</span>
+        </div>
+        <p class="text-body">Hệ thống <strong>nói rõ</strong> cho user biết:</p>
+        <div class="flex flex-col gap-sm mt-md">
+          <div class="status-bar"
+            style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); color: var(--text-secondary);">
+            <span>⚠️</span> <strong>T6:</strong> "Ngày 2 có 6 điểm — ước tính 8h di chuyển"
+          </div>
+          <div class="status-bar"
+            style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); color: var(--text-secondary);">
+            <span>📅</span> <strong>T7:</strong> "Thông tin từ tháng 3/2025 — có thể đã thay đổi"
+          </div>
+          <div class="status-bar"
+            style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); color: var(--text-secondary);">
+            <span>🏨</span> <strong>T3:</strong> "Đề xuất Hotel B vì bạn ưu tiên gần biển"
+          </div>
+          <div class="status-bar"
+            style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); color: var(--text-secondary);">
+            <span>🚫</span> <strong>T9:</strong> "AI không thể thanh toán thay bạn"
+          </div>
+        </div>
+        <div class="feedback-rationale-grid mt-md">
+          <div><strong>1. Thời điểm:</strong> Ngay khi AI đưa ra thông tin có rủi ro hoặc giới hạn quyền.</div>
+          <div><strong>2. Mục tiêu:</strong> Giúp user đánh giá chất lượng đề xuất trước khi quyết định.</div>
+          <div><strong>3. Vì sao explicit:</strong> Rủi ro lịch quá dày, thông tin cũ, thanh toán cần nói thẳng.</div>
+          <div><strong>4. Ý nghĩa tín hiệu:</strong> Cảnh báo thời gian khác cảnh báo nguồn cũ và khác giới hạn thanh
+            toán.</div>
+          <div><strong>5. Phản ứng ngay:</strong> Hiện banner, evidence panel, link kiểm tra, tooltip hoặc alternative.
+          </div>
+          <div><strong>6. Cá nhân hóa:</strong> User có thể dùng cảnh báo để chọn mức tin tưởng và chỉnh preference.</div>
+          <div><strong>7. User kiểm soát:</strong> User thấy lý do, có nút kiểm tra/giữ/đổi/áp dụng, không bị đổi ngầm.
+          </div>
+          <div><strong>8. Gián đoạn:</strong> Chỉ nổi bật ở điểm rủi ro; các phần an toàn vẫn giữ flow bình thường.</div>
+        </div>
+      </div>
+
+      <!-- CELL 4: Implicit System → User -->
+      <div class="card mt-md" style="border-left: 3px solid var(--warning-400);">
+        <div class="flex items-center gap-sm mb-sm">
+          <span class="badge badge-warning">4</span>
+          <span class="heading-sm">Implicit System → User</span>
+        </div>
+        <p class="text-body">Giao diện <strong>tự truyền đạt</strong> (không cần đọc text):</p>
+        <div class="flex flex-col gap-sm mt-md">
+          <div class="status-bar"
+            style="background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15); color: var(--text-secondary);">
+            <span>🟡</span> Badge nhấp nháy trên mục có thông tin cũ → user biết cần kiểm tra
+          </div>
+          <div class="status-bar"
+            style="background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15); color: var(--text-secondary);">
+            <span>🔒</span> Nút thanh toán bị disable → user hiểu AI không thể làm việc này
+          </div>
+          <div class="status-bar"
+            style="background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15); color: var(--text-secondary);">
+            <span>⭐</span> Hotel đầu tiên có border sáng + badge "Đề xuất" → user biết đây là ưu tiên
+          </div>
+          <div class="status-bar"
+            style="background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.15); color: var(--text-secondary);">
+            <span>📊</span> Chip đã chọn sáng lên ở T2 → user biết AI ghi nhận lựa chọn
+          </div>
+        </div>
+        <div class="feedback-rationale-grid mt-md">
+          <div><strong>1. Thời điểm:</strong> Luôn hiện trong UI khi có trạng thái cần chú ý: badge, disabled, selected.
+          </div>
+          <div><strong>2. Mục tiêu:</strong> Giúp user nhận biết trạng thái nhanh mà không phải đọc đoạn giải thích dài.
+          </div>
+          <div><strong>3. Vì sao implicit:</strong> Đây là cue thị giác liên tục, không cần thông báo bằng câu riêng.</div>
+          <div><strong>4. Ý nghĩa tín hiệu:</strong> Badge = cần kiểm tra; disabled = không được phép; border = ưu tiên.
+          </div>
+          <div><strong>5. Phản ứng ngay:</strong> UI đổi trạng thái: chip sáng, badge pulse, button khóa, card nổi bật.
+          </div>
+          <div><strong>6. Cá nhân hóa:</strong> Không dùng riêng cue này để học; chỉ hỗ trợ user đọc trạng thái.</div>
+          <div><strong>7. User kiểm soát:</strong> Tooltip, panel chi tiết và nút thay đổi giúp user hiểu cue đang dùng gì.
+          </div>
+          <div><strong>8. Gián đoạn:</strong> Thấp nhất vì chỉ là affordance; chi tiết mở thêm khi user cần.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="flex gap-sm">
+        <button class="btn btn-ghost flex-1" onclick="goTo('screen-flowmap')">
+          ← Về Flow Map
+        </button>
+        <button class="btn btn-primary flex-1" onclick="goTo('screen-flowmap')">
+          ✓ Kết thúc Demo
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <!-- end #app -->
+
+  <script src="js/app.js"></script>
+</body>
+
+</html>
